@@ -5,7 +5,7 @@ import autoTable from 'jspdf-autotable'
 import type { ClientProfile } from '../types'
 import { PORTFOLIOS } from '../data/funds'
 import { sipProjection, formatINR } from '../utils/calculations'
-import { Card, SectionTitle, YearlyTable } from './ui'
+import { Card, YearlyTable } from './ui'
 
 const COLORS = ['#0a1530', '#c4943a', '#2c4f9e', '#d9ad4a', '#162a5c']
 const RECOMMENDATION_REASONS: Record<string, string> = {
@@ -122,7 +122,6 @@ export function ClientReport({ profile }: { profile: ClientProfile }) {
     doc.text('AMFI Registered Mutual Fund Distributor', margin + 18, 204)
     doc.text('WealthTogether Investments', margin + 18, 222)
 
-    const cardWidth = (pageWidth - margin * 2 - 16) / 5
     const summaryY = 240
     const summaryCards = [
       { label: 'Monthly SIP', value: formatINR(sip || 0) },
@@ -131,6 +130,7 @@ export function ClientReport({ profile }: { profile: ClientProfile }) {
       { label: 'Wealth Created', value: formatINR(wealthCreated) },
       { label: 'Wealth Multiple', value: wealthMultiple.toFixed(2) + 'x' }
     ]
+    const cardWidth = (pageWidth - margin * 2 - 16) / summaryCards.length
 
     summaryCards.forEach((card, index) => {
       const x = margin + index * (cardWidth + 4)
@@ -160,7 +160,7 @@ export function ClientReport({ profile }: { profile: ClientProfile }) {
     doc.text(`Investment Duration: ${years || 0} years`, margin + 240, 374)
     doc.text(`Monthly SIP: ${formatINR(sip || 0)}`, margin + 16, 392)
     doc.text(`Expected Return: 12% p.a.`, margin + 240, 392)
-    doc.text(`Target Corpus: ${projection ? formatINR(expectedCorpus) : 'â€”'}`, margin + 16, 410)
+    doc.text(`Target Corpus: ${projection ? formatINR(expectedCorpus) : '—'}`, margin + 16, 410)
 
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(12)
@@ -220,7 +220,7 @@ export function ClientReport({ profile }: { profile: ClientProfile }) {
     doc.text('Expected Corpus at Retirement', margin + 14, tableY + 18)
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(10)
-    doc.text(`${projection ? formatINR(expectedCorpus) : 'â€”'} over ${years || 0} years`, margin + 14, tableY + 36)
+    doc.text(`${projection ? formatINR(expectedCorpus) : '—'} over ${years || 0} years`, margin + 14, tableY + 36)
 
     const notesY = tableY + 74
     doc.setFont('helvetica', 'bold')
@@ -285,17 +285,17 @@ export function ClientReport({ profile }: { profile: ClientProfile }) {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 text-sm">
             <Detail label="Prepared by" value="Mohana Kumar T" />
             <Detail label="Designation" value="AMFI Registered Mutual Fund Distributor" />
-            <Detail label="Client name" value={profile.name || 'â€”'} />
+            <Detail label="Client name" value={profile.name || '—'} />
             <Detail label="Risk profile" value={profile.riskProfile} />
           </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-          <SummaryCard label="Monthly SIP" value={sip ? formatINR(sip) : 'â€”'} />
+          <SummaryCard label="Monthly SIP" value={sip ? formatINR(sip) : '—'} />
           <SummaryCard label="Total Investment" value={formatINR(totalInvested)} />
           <SummaryCard label="Expected Corpus" value={formatINR(expectedCorpus)} />
           <SummaryCard label="Wealth Created" value={formatINR(wealthCreated)} />
-          <SummaryCard label="Wealth Multiple" value={wealthMultiple ? `${wealthMultiple.toFixed(2)}x` : 'â€”'} />
+          <SummaryCard label="Wealth Multiple" value={wealthMultiple ? `${wealthMultiple.toFixed(2)}x` : '—'} />
         </div>
 
         <div className="rounded-2xl border border-gold-200 bg-gold-50 p-4 mb-6">
@@ -303,9 +303,9 @@ export function ClientReport({ profile }: { profile: ClientProfile }) {
           <div className="grid gap-3 md:grid-cols-5 text-sm">
             <Detail label="Goal name" value={goalName} />
             <Detail label="Investment duration" value={`${years || 0} years`} />
-            <Detail label="Monthly SIP" value={sip ? formatINR(sip) : 'â€”'} />
+            <Detail label="Monthly SIP" value={sip ? formatINR(sip) : '—'} />
             <Detail label="Expected return" value="12% p.a." />
-            <Detail label="Target corpus" value={projection ? formatINR(expectedCorpus) : 'â€”'} />
+            <Detail label="Target corpus" value={projection ? formatINR(expectedCorpus) : '—'} />
           </div>
         </div>
 
@@ -425,214 +425,6 @@ export function ClientReport({ profile }: { profile: ClientProfile }) {
   )
 }
 
-    if (projection) {
-      doc.setFont('helvetica', 'bold')
-      doc.setFontSize(12)
-      doc.text('SIP Projection', margin, tableY)
-      doc.setDrawColor(196, 148, 58)
-      doc.line(margin, tableY + 8, margin + 145, tableY + 8)
-
-      autoTable(doc, {
-        startY: tableY + 18,
-        head: [['Year', 'Invested', 'Corpus', 'Wealth Created']],
-        body: projection.rows.map((row) => [
-          `${row.year}`,
-          formatINR(row.invested),
-          formatINR(row.value),
-          formatINR(row.profit)
-        ]),
-        theme: 'grid',
-        styles: {
-          fontSize: 9,
-          cellPadding: 6,
-          textColor: '#17315d'
-        },
-        headStyles: {
-          fillColor: [10, 21, 48],
-          textColor: [255, 255, 255],
-          fontStyle: 'bold'
-        },
-        columnStyles: {
-          0: { cellWidth: 65, halign: 'center' },
-          1: { cellWidth: 140 },
-          2: { cellWidth: 140 },
-          3: { cellWidth: 140 }
-        },
-        alternateRowStyles: { fillColor: [246, 250, 255] },
-        margin: { left: margin, right: margin }
-      })
-    }
-
-    const totalPages = doc.getNumberOfPages()
-    for (let i = 1; i <= totalPages; i += 1) {
-      doc.setPage(i)
-      addHeader(i, totalPages)
-      addFooter(i, totalPages)
-    }
-
-    doc.save(`${profile.name || 'client'}-financial-report.pdf`)
-  }
-
-  return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 no-print">
-        <p className="text-sm text-navy-700/60">
-          Download a polished PDF report for your client or share a print-ready version.
-        </p>
-        <div className="flex gap-2">
-          <button
-            onClick={handleDownloadPdf}
-            className="rounded-lg bg-gold-600 text-navy-900 px-5 py-2.5 text-sm font-semibold hover:bg-gold-500 transition-colors"
-          >
-            Download PDF
-          </button>
-          <button
-            onClick={() => window.print()}
-            className="rounded-lg bg-navy-900 text-white px-5 py-2.5 text-sm font-medium hover:bg-navy-800 transition-colors"
-          >
-            Print
-          </button>
-        </div>
-      </div>
-
-      <Card className="print-area max-w-5xl mx-auto">
-        <div className="flex items-center justify-between border-b border-navy-900/10 pb-4 mb-6">
-          <div>
-            <p className="font-display text-xl text-navy-900">WealthTogether Investments</p>
-            <p className="text-xs text-gold-600 uppercase tracking-wide">
-              Invest Early. Stay Consistent. Let Time Build Wealth.
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs text-navy-700/50">Personal Financial Planning Report</p>
-            <p className="text-xs text-navy-700/50">{new Date().toLocaleDateString('en-IN')}</p>
-          </div>
-        </div>
-
-        <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 mb-6">
-          <div className="grid sm:grid-cols-2 gap-4 text-sm">
-            <Detail label="Prepared by" value="Mohana Kumar T" />
-            <Detail label="Designation" value="AMFI Registered Mutual Fund Distributor" />
-            <Detail label="Client name" value={profile.name || 'â€”'} />
-            <Detail label="Risk profile" value={profile.riskProfile} />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-          <SummaryCard label="Monthly SIP" value={sip ? formatINR(sip) : 'â€”'} />
-          <SummaryCard label="Total Investment" value={formatINR(totalInvested)} />
-          <SummaryCard label="Expected Corpus" value={formatINR(expectedCorpus)} />
-          <SummaryCard label="Wealth Created" value={formatINR(wealthCreated)} />
-          <SummaryCard label="Wealth Multiple" value={wealthMultiple ? `${wealthMultiple.toFixed(2)}x` : 'â€”'} />
-        </div>
-
-        <div className="rounded-xl border border-gold-200 bg-gold-50 p-4 mb-6">
-          <p className="text-xs uppercase tracking-wide text-gold-700 mb-2">Goal Summary</p>
-          <div className="grid md:grid-cols-5 gap-3 text-sm">
-            <Detail label="Goal name" value={goalName} />
-            <Detail label="Investment duration" value={`${years || 0} years`} />
-            <Detail label="Monthly SIP" value={sip ? formatINR(sip) : 'â€”'} />
-            <Detail label="Expected return" value="12% p.a." />
-            <Detail label="Target corpus" value={projection ? formatINR(expectedCorpus) : 'â€”'} />
-          </div>
-        </div>
-
-        <div className="mb-8">
-          <h3 className="font-display text-lg text-navy-900 mb-3">Portfolio allocation</h3>
-          <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-6 items-center">
-            <div className="h-[340px] rounded-xl bg-slate-50 p-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    dataKey="value"
-                    nameKey="name"
-                    innerRadius={64}
-                    outerRadius={110}
-                    paddingAngle={4}
-                  >
-                    {pieData.map((_, i) => (
-                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(v: number) => `${v}%`} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="space-y-3">
-              {allocation.map((a, i) => (
-                <div
-                  key={a.fund}
-                  className="rounded-xl border border-slate-200 p-3 flex items-center justify-between gap-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <span
-                      className="w-3 h-3 rounded-full inline-block"
-                      style={{ background: COLORS[i % COLORS.length] }}
-                    />
-                    <div>
-                      <p className="font-medium text-navy-900">{a.fund}</p>
-                      <p className="text-xs text-navy-700/60">
-                        {RECOMMENDATION_REASONS[a.fund] || 'Diversified allocation'}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="font-semibold text-navy-900">{a.percent}%</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="mb-8">
-          <h3 className="font-display text-lg text-navy-900 mb-3">Portfolio recommendation</h3>
-          <div className="space-y-3">
-            {allocation.map((a, i) => (
-              <div key={a.fund} className="rounded-xl border border-slate-200 p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="font-medium text-navy-900">{a.fund}</p>
-                    <p className="text-sm text-navy-700/60">
-                      {RECOMMENDATION_REASONS[a.fund] || 'Diversified allocation'}
-                    </p>
-                  </div>
-                  <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-navy-900">
-                    {a.percent}% allocation
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {projection ? (
-          <>
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="font-display text-lg text-navy-900">SIP projection</h3>
-              <span className="text-sm text-navy-700/60">{years} years @ 12% p.a.</span>
-            </div>
-            <div className="grid sm:grid-cols-3 gap-3 mb-6">
-              <Detail label="Total invested" value={formatINR(projection.totalInvested)} />
-              <Detail label="Final corpus" value={formatINR(projection.corpus)} />
-              <Detail label="Wealth created" value={formatINR(projection.wealthCreated)} />
-            </div>
-            <YearlyTable rows={projection.rows} />
-          </>
-        ) : (
-          <p className="text-sm text-navy-700/60 mb-6">
-            Add a monthly SIP and duration in the Client Profiler to include a projection.
-          </p>
-        )}
-
-        <p className="text-[11px] text-navy-700/50 mt-8 border-t border-navy-900/10 pt-4 leading-relaxed">
-          Disclaimer: Mutual fund investments are subject to market risks. Read all scheme-related
-          documents carefully before investing.
-        </p>
-      </Card>
-    </div>
-  )
-}
-
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div>
@@ -644,7 +436,7 @@ function Detail({ label, value }: { label: string; value: string }) {
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+    <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
       <p className="text-[11px] uppercase tracking-wide text-navy-700/50">{label}</p>
       <p className="mt-2 text-base font-semibold text-navy-900">{value}</p>
     </div>

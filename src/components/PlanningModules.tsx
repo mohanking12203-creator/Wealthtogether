@@ -3,13 +3,11 @@ import {
   retirementCorpus,
   sipRequiredForTarget,
   educationProjection,
-  termInsuranceCover,
-  HEALTH_INSURANCE_BANDS,
   aumTrailIncome,
   formatINR,
 } from '../utils/calculations'
 import { DEFAULT_COMMISSION } from '../data/funds'
-import { Card, Field, NumberInput, SectionTitle, StatTile, inputClass } from './ui'
+import { Card, Field, NumberInput, SectionTitle, StatTile } from './ui'
 
 export function RetirementCalculator() {
   const [currentAge, setCurrentAge] = useState<number | ''>(30)
@@ -112,51 +110,97 @@ export function ChildEducationCalculator() {
 }
 
 export function InsuranceCalculator() {
+  const [age, setAge] = useState<number | ''>(35)
   const [annualIncome, setAnnualIncome] = useState<number | ''>(1200000)
-  const [familyType, setFamilyType] = useState<keyof typeof HEALTH_INSURANCE_BANDS>('Couple')
+  const [existingInsurance, setExistingInsurance] = useState<number | ''>(500000)
+  const [liabilities, setLiabilities] = useState<number | ''>(2000000)
+  const [healthOption, setHealthOption] = useState<'Single' | 'Married Couple' | 'Family Floater'>(
+    'Single'
+  )
 
-  const cover = termInsuranceCover(Number(annualIncome) || 0)
-  const band = HEALTH_INSURANCE_BANDS[familyType]
+  const recommendedCover = useMemo(() => {
+    const income = Number(annualIncome) || 0
+    const existing = Number(existingInsurance) || 0
+    const liabilitiesValue = Number(liabilities) || 0
+    return Math.max(0, income * 20 + liabilitiesValue - existing)
+  }, [annualIncome, existingInsurance, liabilities])
+
+  const healthRecommendations: Record<string, string> = {
+    Single: '₹10 lakh',
+    'Married Couple': '₹15 lakh',
+    'Family Floater': '₹25 lakh'
+  }
+
+  const healthRecommendation = healthRecommendations[healthOption]
 
   return (
     <Card>
       <SectionTitle
         eyebrow="Module 07"
         title="Insurance Calculator"
-        description="Term cover sized at 15x annual income, plus an indicative health insurance premium band by family type."
+        description="Estimate term cover using income, liabilities, and current protection, plus a simple health insurance recommendation."
       />
-      <div className="grid md:grid-cols-2 gap-6">
-        <div>
-          <h3 className="font-display text-lg text-navy-900 mb-3">Term insurance</h3>
-          <Field label="Annual income">
-            <NumberInput value={annualIncome} onChange={setAnnualIncome} suffix="₹" />
-          </Field>
-          <div className="mt-4">
-            <StatTile label="Recommended cover" value={formatINR(cover)} accent />
+      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-5">
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.18em] text-gold-600">Term insurance</p>
+              <h3 className="font-display text-xl text-navy-900">Recommended cover</h3>
+            </div>
+            <span className="rounded-full bg-gold-50 px-3 py-1 text-xs font-medium text-gold-700">
+              20 × income + liabilities - existing cover
+            </span>
           </div>
-        </div>
-        <div>
-          <h3 className="font-display text-lg text-navy-900 mb-3">Health insurance</h3>
-          <Field label="Family type">
-            <select
-              className={inputClass}
-              value={familyType}
-              onChange={(e) => setFamilyType(e.target.value as keyof typeof HEALTH_INSURANCE_BANDS)}
-            >
-              {Object.keys(HEALTH_INSURANCE_BANDS).map((k) => (
-                <option key={k} value={k}>
-                  {k}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <div className="mt-4">
-            <StatTile
-              label="Indicative annual premium"
-              value={`${formatINR(band[0])} – ${formatINR(band[1])}`}
-            />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Age">
+              <NumberInput value={age} onChange={setAge} suffix="yrs" />
+            </Field>
+            <Field label="Annual income">
+              <NumberInput value={annualIncome} onChange={setAnnualIncome} suffix="₹" />
+            </Field>
+            <Field label="Existing insurance">
+              <NumberInput value={existingInsurance} onChange={setExistingInsurance} suffix="₹" />
+            </Field>
+            <Field label="Liabilities">
+              <NumberInput value={liabilities} onChange={setLiabilities} suffix="₹" />
+            </Field>
           </div>
-        </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <StatTile label="Recommended cover" value={formatINR(recommendedCover)} accent />
+            <StatTile label="Age input" value={age ? `${age} yrs` : '—'} />
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-navy-950 to-navy-900 p-5 text-white">
+          <p className="text-xs uppercase tracking-[0.18em] text-gold-300">Health insurance</p>
+          <h3 className="font-display text-xl mt-1">Suggested coverage</h3>
+          <div className="mt-4 grid gap-3">
+            {(['Single', 'Married Couple', 'Family Floater'] as const).map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setHealthOption(option)}
+                className={`rounded-2xl border p-4 text-left transition-colors ${
+                  healthOption === option
+                    ? 'border-gold-400 bg-gold-500/10'
+                    : 'border-white/10 bg-white/5 hover:bg-white/10'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="font-semibold">{option}</p>
+                    <p className="text-xs text-white/65">Recommended coverage</p>
+                  </div>
+                  <span className="text-sm font-semibold text-gold-300">{healthRecommendations[option]}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+          <div className="mt-5 rounded-2xl bg-white/5 p-4">
+            <p className="text-xs uppercase tracking-[0.18em] text-white/65">Selected option</p>
+            <p className="mt-1 text-2xl font-semibold text-gold-300">{healthRecommendation}</p>
+          </div>
+        </section>
       </div>
     </Card>
   )
