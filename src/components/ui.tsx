@@ -9,7 +9,7 @@ export function Card({
 }) {
   return (
     <div
-      className={`bg-white rounded-xl border border-navy-900/10 shadow-[0_1px_3px_rgba(10,21,48,0.08)] p-6 ${className}`}
+      className={`bg-white rounded-2xl border border-navy-900/10 shadow-[0_10px_30px_rgba(10,21,48,0.06)] p-5 sm:p-6 lg:p-7 ${className}`}
     >
       {children}
     </div>
@@ -26,7 +26,7 @@ export function SectionTitle({
   description?: string
 }) {
   return (
-    <div className="mb-6">
+    <div className="mb-6 border-b border-navy-900/10 pb-4">
       <p className="font-mono-num text-xs tracking-[0.18em] uppercase text-gold-600">
         {eyebrow}
       </p>
@@ -94,20 +94,20 @@ export function StatTile({
 }) {
   return (
     <div
-      className={`rounded-lg p-4 border ${
+      className={`rounded-2xl p-4 border shadow-sm ${
         accent
           ? 'bg-navy-900 border-navy-900 text-white'
-          : 'bg-gold-50 border-gold-100 text-navy-900'
+          : 'bg-gold-50/70 border-gold-100 text-navy-900'
       }`}
     >
       <p
-        className={`text-xs uppercase tracking-wide font-mono-num ${
+        className={`text-[11px] uppercase tracking-[0.16em] font-mono-num ${
           accent ? 'text-gold-300' : 'text-navy-700/60'
         }`}
       >
         {label}
       </p>
-      <p className="font-display text-xl md:text-2xl mt-1">{value}</p>
+      <p className="font-display text-xl md:text-2xl mt-1.5">{value}</p>
     </div>
   )
 }
@@ -118,14 +118,14 @@ export function YearlyTable({
   rows: { year: number; invested: number; value: number; profit: number }[]
 }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-navy-900/10">
+    <div className="overflow-x-auto rounded-2xl border border-navy-900/10 shadow-sm">
       <table className="w-full text-sm">
         <thead>
           <tr className="bg-navy-900 text-gold-100 text-left">
-            <th className="px-4 py-2.5 font-medium">Year</th>
-            <th className="px-4 py-2.5 font-medium">Invested Amount</th>
-            <th className="px-4 py-2.5 font-medium">Portfolio Value</th>
-            <th className="px-4 py-2.5 font-medium">Profit</th>
+            <th className="px-4 py-3 font-medium">Year</th>
+            <th className="px-4 py-3 font-medium">Invested Amount</th>
+            <th className="px-4 py-3 font-medium">Portfolio Value</th>
+            <th className="px-4 py-3 font-medium">Profit</th>
           </tr>
         </thead>
         <tbody>
@@ -134,14 +134,14 @@ export function YearlyTable({
               key={row.year}
               className={i % 2 === 0 ? 'bg-white' : 'bg-navy-50/40'}
             >
-              <td className="px-4 py-2 font-mono-num text-navy-800">{row.year}</td>
-              <td className="px-4 py-2 font-mono-num text-navy-700">
+              <td className="px-4 py-3 font-mono-num text-navy-800">{row.year}</td>
+              <td className="px-4 py-3 font-mono-num text-navy-700">
                 ₹{row.invested.toLocaleString('en-IN')}
               </td>
-              <td className="px-4 py-2 font-mono-num text-navy-900 font-medium">
+              <td className="px-4 py-3 font-mono-num text-navy-900 font-medium">
                 ₹{row.value.toLocaleString('en-IN')}
               </td>
-              <td className="px-4 py-2 font-mono-num text-green-700">
+              <td className="px-4 py-3 font-mono-num text-green-700">
                 ₹{row.profit.toLocaleString('en-IN')}
               </td>
             </tr>

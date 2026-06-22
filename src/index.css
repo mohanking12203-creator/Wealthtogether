@@ -6,18 +6,25 @@ html {
   scroll-behavior: smooth;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: 'Inter', sans-serif;
-  background-color: #f6f4ee;
+  margin: 0;
+  font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+  background-color: #f5f7fb;
   color: #0a1530;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .font-display {
-  font-family: 'Fraunces', serif;
+  font-family: 'Fraunces', 'Times New Roman', serif;
 }
 
 .font-mono-num {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'IBM Plex Mono', 'SFMono-Regular', monospace;
 }
 
 /* signature ledger-rule divider */
@@ -33,12 +40,15 @@ body {
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #eef2f7;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d9ad4a;
-  border-radius: 4px;
+  background: #c4943a;
+  border-radius: 999px;
 }
 
 :focus-visible {

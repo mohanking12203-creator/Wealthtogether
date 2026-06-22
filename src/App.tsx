@@ -39,24 +39,31 @@ export default function App() {
   const [funds, setFunds] = useState<Fund[]>(INITIAL_FUNDS)
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-navy-950 text-white no-print">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-md bg-gold-500 flex items-center justify-center font-display text-navy-950 font-bold">
-              W
+    <div className="min-h-screen flex flex-col bg-[radial-gradient(circle_at_top,#f7f4ea_0%,#f7f5ef_40%,#f5f7fb_100%)]">
+      <header className="sticky top-0 z-40 bg-navy-950/95 text-white no-print shadow-lg shadow-navy-950/15 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-gold-400 to-gold-600 text-base font-bold text-navy-950 shadow-sm">
+                WT
+              </div>
+              <div>
+                <p className="font-display text-xl leading-tight">WealthTogether Investments</p>
+                <p className="text-[11px] text-gold-300 uppercase tracking-[0.18em]">
+                  Invest Early • Stay Consistent • Let Time Build Wealth
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="font-display text-lg leading-tight">WealthTogether</p>
-              <p className="text-[11px] text-gold-300 uppercase tracking-[0.14em]">
-                Invest Early · Stay Consistent · Let Time Build Wealth
-              </p>
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <span className="hidden rounded-full border border-gold-400/40 bg-gold-500/10 px-3 py-1 text-xs font-medium text-gold-100 sm:inline-flex">
+                Financial Planning Dashboard
+              </span>
+              <div className="ledger-rule hidden md:block w-24" />
             </div>
           </div>
-          <div className="ledger-rule hidden md:block w-32" />
         </div>
         <nav className="border-t border-white/10 overflow-x-auto">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 flex gap-1 text-sm">
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 flex gap-1 text-sm">
             {TABS.map((t) => (
               <button
                 key={t.id}
@@ -74,7 +81,7 @@ export default function App() {
         </nav>
       </header>
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-8">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 lg:py-10">
         {tab === 'profiler' && (
           <ClientProfiler
             profile={profile}
@@ -93,8 +100,16 @@ export default function App() {
         {tab === 'admin' && <AdminPanel funds={funds} setFunds={setFunds} />}
       </main>
 
-      <footer className="no-print border-t border-navy-900/10 py-6 text-center text-xs text-navy-700/50">
-        WealthTogether Investments — for illustrative financial planning use only. Not investment advice.
+      <footer className="no-print border-t border-navy-900/10 bg-white/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 text-center">
+          <p className="font-display text-lg text-navy-900">WealthTogether Investments</p>
+          <p className="mt-1 text-[11px] uppercase tracking-[0.18em] text-gold-600">
+            Invest Early • Stay Consistent • Let Time Build Wealth
+          </p>
+          <p className="mt-2 text-sm text-navy-700/60">
+            For illustrative financial planning use only. Not investment advice.
+          </p>
+        </div>
       </footer>
     </div>
   )
