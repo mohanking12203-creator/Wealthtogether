@@ -4,7 +4,12 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import type { ClientProfile } from '../types'
 import { PORTFOLIOS } from '../data/funds'
-import { sipProjection, formatINR, getRiskReturnAssumption } from '../utils/calculations'
+import {
+  sipProjection,
+  formatINR,
+  getRiskReturnAssumption,
+  validateFundAllocation,
+} from '../utils/calculations'
 import { Card, YearlyTable } from './ui'
 
 const COLORS = ['#0a1530', '#c4943a', '#2c4f9e', '#d9ad4a', '#162a5c']
@@ -30,21 +35,22 @@ export function ClientReport({ profile }: { profile: ClientProfile }) {
   const years = Number(profile.durationYears) || 0
   const allocation = PORTFOLIOS[profile.riskProfile]
   const expectedReturn = getRiskReturnAssumption(profile.riskProfile)
+  const { validatedAllocations, warning } = useMemo(
+    () => validateFundAllocation(allocation, sip),
+    [allocation, sip]
+  )
   const projection = useMemo(
     () => (sip > 0 && years > 0 ? sipProjection(sip, expectedReturn, years) : null),
     [sip, years, expectedReturn]
   )
 
-  const pieData = allocation.map((a) => ({ name: a.fund, value: a.percent }))
+  const pieData = validatedAllocations.map((a) => ({ name: a.fund, value: a.percent }))
   const expectedCorpus = projection?.corpus ?? 0
   const totalInvested = projection?.totalInvested ?? 0
   const wealthCreated = projection?.wealthCreated ?? 0
   const wealthMultiple = totalInvested > 0 ? expectedCorpus / totalInvested : 0
   const goalName = profile.name ? `${profile.name.split(' ')[0]}'s Wealth Goal` : 'Personal Wealth Goal'
-  const monthlyFundAllocation = allocation.map((a) => ({
-    ...a,
-    monthlyAmount: Math.round((sip * a.percent) / 100)
-  }))
+  const monthlyFundAllocation = validatedAllocations
   const riskProfileExplanation = RISK_PROFILE_EXPLANATION[profile.riskProfile]
 
   const handleDownloadPdf = () => {
@@ -286,10 +292,16 @@ export function ClientReport({ profile }: { profile: ClientProfile }) {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 text-sm">
             <Detail label="Prepared by" value="Mohana Kumar T" />
             <Detail label="Designation" value="AMFI Registered Mutual Fund Distributor" />
-            <Detail label="Client name" value={profile.name || '�'} />
+            <Detail label="Client name" value={profile.name || '—'} />
             <Detail label="Risk profile" value={profile.riskProfile} />
           </div>
         </div>
+
+        {warning && (
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            {warning}
+          </div>
+        )}
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
           <SummaryCard label="Monthly SIP" value={sip ? formatINR(sip) : '�'} />

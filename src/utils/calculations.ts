@@ -1,4 +1,4 @@
-import type { RiskProfile, YearlyRow } from '../types'
+import type { FundAllocation, RiskProfile, YearlyRow } from '../types'
 
 export const RISK_RETURN_ASSUMPTIONS: Record<RiskProfile, number> = {
   Low: 10,
@@ -163,6 +163,60 @@ export const HEALTH_INSURANCE_BANDS: Record<string, [number, number]> = {
   Single: [8000, 15000],
   Couple: [15000, 25000],
   'Family Floater': [25000, 50000],
+}
+
+export function validateFundAllocation(
+  allocations: FundAllocation[],
+  monthlySip: number
+): { validatedAllocations: Array<FundAllocation & { monthlyAmount: number }>; warning: string | null } {
+  if (monthlySip <= 0) {
+    return {
+      validatedAllocations: allocations.map((allocation) => ({
+        ...allocation,
+        monthlyAmount: 0,
+      })),
+      warning: null,
+    }
+  }
+
+  const baseRows = allocations.map((allocation) => ({
+    ...allocation,
+    monthlyAmount: Math.round((monthlySip * allocation.percent) / 100),
+  }))
+
+  const flexiIndex = baseRows.findIndex((row) => row.fund.toLowerCase().includes('flexi cap'))
+  let warning: string | null = null
+
+  const hasContraBelowMinimum = baseRows.some(
+    (row) => row.fund.toLowerCase().includes('contra') && row.monthlyAmount < 500
+  )
+
+  if (hasContraBelowMinimum && flexiIndex >= 0) {
+    warning = 'Contra Fund requires minimum SIP of ₹500.'
+    const amountToReallocate = baseRows
+      .filter((row) => row.fund.toLowerCase().includes('contra'))
+      .reduce((sum, row) => sum + Math.min(row.monthlyAmount, 500), 0)
+    baseRows[flexiIndex].monthlyAmount += amountToReallocate
+  }
+
+  const validatedRows = baseRows.filter((row) => {
+    const name = row.fund.toLowerCase()
+    if (name.includes('small cap') && monthlySip < 10000) return false
+    if (name.includes('dividend yield') && monthlySip < 8000) return false
+    if (name.includes('contra') && monthlySip < 4000) return false
+    if (name.includes('contra') && row.monthlyAmount < 500) return false
+    return true
+  })
+
+  const validatedAllocations = validatedRows.map((row) => ({
+    ...row,
+    percent: row.percent,
+  }))
+
+  return {
+    validatedAllocations,
+    warning,
+  }
 }
 
 export function aumTrailIncome(currentAum: number, commissionPct: number) {

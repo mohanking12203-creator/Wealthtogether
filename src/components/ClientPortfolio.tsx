@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import type { ClientProfile, RiskProfile } from '../types'
 import { PORTFOLIOS } from '../data/funds'
+import { validateFundAllocation } from '../utils/calculations'
 import { Card, Field, NumberInput, SectionTitle, inputClass } from './ui'
 
 const RISK_OPTIONS: RiskProfile[] = ['Low', 'Moderate', 'High']
@@ -118,6 +119,10 @@ function Row({ label, value }: { label: string; value: string }) {
 export function PortfolioEngine({ profile }: { profile: ClientProfile }) {
   const sip = Number(profile.monthlySip) || 0
   const allocation = useMemo(() => PORTFOLIOS[profile.riskProfile], [profile.riskProfile])
+  const { validatedAllocations, warning } = useMemo(
+    () => validateFundAllocation(allocation, sip),
+    [allocation, sip]
+  )
 
   return (
     <Card>
@@ -131,6 +136,11 @@ export function PortfolioEngine({ profile }: { profile: ClientProfile }) {
           Enter a monthly SIP amount in the Client Profiler to see rupee-level allocation.
         </p>
       )}
+      {warning && (
+        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          {warning}
+        </div>
+      )}
       <div className="overflow-x-auto rounded-lg border border-navy-900/10">
         <table className="w-full text-sm">
           <thead>
@@ -141,12 +151,12 @@ export function PortfolioEngine({ profile }: { profile: ClientProfile }) {
             </tr>
           </thead>
           <tbody>
-            {allocation.map((a, i) => (
+            {validatedAllocations.map((a, i) => (
               <tr key={a.fund} className={i % 2 === 0 ? 'bg-white' : 'bg-navy-50/40'}>
                 <td className="px-4 py-2.5 text-navy-900 font-medium">{a.fund}</td>
                 <td className="px-4 py-2.5 font-mono-num text-navy-700">{a.percent}%</td>
                 <td className="px-4 py-2.5 font-mono-num text-navy-900">
-                  ₹{Math.round((sip * a.percent) / 100).toLocaleString('en-IN')}
+                  ₹{a.monthlyAmount.toLocaleString('en-IN')}
                 </td>
               </tr>
             ))}
