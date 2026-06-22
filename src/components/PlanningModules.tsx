@@ -5,15 +5,19 @@ import {
   educationProjection,
   aumTrailIncome,
   formatINR,
+  getRiskReturnAssumption,
 } from '../utils/calculations'
+import type { ClientProfile } from '../types'
 import { DEFAULT_COMMISSION } from '../data/funds'
 import { Card, Field, NumberInput, SectionTitle, StatTile } from './ui'
 
-export function RetirementCalculator() {
+export function RetirementCalculator({ profile }: { profile: ClientProfile }) {
   const [currentAge, setCurrentAge] = useState<number | ''>(30)
   const [retirementAge, setRetirementAge] = useState<number | ''>(60)
   const [expense, setExpense] = useState<number | ''>(40000)
   const [inflation, setInflation] = useState<number | ''>(6)
+
+  const riskReturn = getRiskReturnAssumption(profile.riskProfile)
 
   const result = useMemo(() => {
     const ca = Number(currentAge) || 0
@@ -22,9 +26,13 @@ export function RetirementCalculator() {
     const inf = Number(inflation) || 0
     if (ra <= ca || exp <= 0) return null
     const corpus = retirementCorpus(ca, ra, exp, inf)
-    const suggestedSip = sipRequiredForTarget(corpus.corpusRequired, corpus.yearsToRetire, 12)
-    return { ...corpus, suggestedSip }
-  }, [currentAge, retirementAge, expense, inflation])
+    const suggestedSip = sipRequiredForTarget(
+      corpus.corpusRequired,
+      corpus.yearsToRetire,
+      riskReturn
+    )
+    return { ...corpus, suggestedSip, riskReturn }
+  }, [currentAge, retirementAge, expense, inflation, riskReturn])
 
   return (
     <Card>
@@ -48,10 +56,11 @@ export function RetirementCalculator() {
         </Field>
       </div>
       {result ? (
-        <div className="grid sm:grid-cols-3 gap-3">
+        <div className="grid sm:grid-cols-4 gap-3">
           <StatTile label="Future monthly expense" value={formatINR(result.futureMonthlyExpense)} />
           <StatTile label="Retirement corpus required" value={formatINR(result.corpusRequired)} accent />
           <StatTile label="Suggested monthly SIP" value={formatINR(result.suggestedSip)} />
+          <StatTile label="Expected return" value={`${result.riskReturn}% p.a.`} />
         </div>
       ) : (
         <p className="text-sm text-navy-700/60">Retirement age must be greater than current age.</p>
@@ -60,11 +69,13 @@ export function RetirementCalculator() {
   )
 }
 
-export function ChildEducationCalculator() {
+export function ChildEducationCalculator({ profile }: { profile: ClientProfile }) {
   const [childAge, setChildAge] = useState<number | ''>(5)
   const [collegeAge, setCollegeAge] = useState<number | ''>(18)
   const [currentCost, setCurrentCost] = useState<number | ''>(1500000)
   const [inflation, setInflation] = useState<number | ''>(8)
+
+  const riskReturn = getRiskReturnAssumption(profile.riskProfile)
 
   const result = useMemo(() => {
     const ca = Number(childAge) || 0
@@ -72,8 +83,11 @@ export function ChildEducationCalculator() {
     const cost = Number(currentCost) || 0
     const inf = Number(inflation) || 0
     if (cga <= ca || cost <= 0) return null
-    return educationProjection(ca, cga, cost, inf)
-  }, [childAge, collegeAge, currentCost, inflation])
+    return {
+      ...educationProjection(ca, cga, cost, inf, riskReturn),
+      riskReturn,
+    }
+  }, [childAge, collegeAge, currentCost, inflation, riskReturn])
 
   return (
     <Card>
@@ -97,10 +111,11 @@ export function ChildEducationCalculator() {
         </Field>
       </div>
       {result ? (
-        <div className="grid sm:grid-cols-3 gap-3">
+        <div className="grid sm:grid-cols-4 gap-3">
           <StatTile label="Years to goal" value={`${result.yearsToGoal} yrs`} />
           <StatTile label="Future education cost" value={formatINR(result.futureCost)} accent />
           <StatTile label="Required monthly SIP" value={formatINR(result.requiredSip)} />
+          <StatTile label="Expected return" value={`${result.riskReturn}% p.a.`} />
         </div>
       ) : (
         <p className="text-sm text-navy-700/60">College age must be greater than the child's current age.</p>

@@ -4,7 +4,7 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import type { ClientProfile } from '../types'
 import { PORTFOLIOS } from '../data/funds'
-import { sipProjection, formatINR } from '../utils/calculations'
+import { sipProjection, formatINR, getRiskReturnAssumption } from '../utils/calculations'
 import { Card, YearlyTable } from './ui'
 
 const COLORS = ['#0a1530', '#c4943a', '#2c4f9e', '#d9ad4a', '#162a5c']
@@ -29,9 +29,10 @@ export function ClientReport({ profile }: { profile: ClientProfile }) {
   const sip = Number(profile.monthlySip) || 0
   const years = Number(profile.durationYears) || 0
   const allocation = PORTFOLIOS[profile.riskProfile]
+  const expectedReturn = getRiskReturnAssumption(profile.riskProfile)
   const projection = useMemo(
-    () => (sip > 0 && years > 0 ? sipProjection(sip, 12, years) : null),
-    [sip, years]
+    () => (sip > 0 && years > 0 ? sipProjection(sip, expectedReturn, years) : null),
+    [sip, years, expectedReturn]
   )
 
   const pieData = allocation.map((a) => ({ name: a.fund, value: a.percent }))
@@ -159,8 +160,8 @@ export function ClientReport({ profile }: { profile: ClientProfile }) {
     doc.text(`Goal Name: ${goalName}`, margin + 16, 374)
     doc.text(`Investment Duration: ${years || 0} years`, margin + 240, 374)
     doc.text(`Monthly SIP: ${formatINR(sip || 0)}`, margin + 16, 392)
-    doc.text(`Expected Return: 12% p.a.`, margin + 240, 392)
-    doc.text(`Target Corpus: ${projection ? formatINR(expectedCorpus) : '—'}`, margin + 16, 410)
+    doc.text(`Expected Return: ${expectedReturn}% p.a.`, margin + 240, 392)
+    doc.text(`Target Corpus: ${projection ? formatINR(expectedCorpus) : 'â€”'}`, margin + 16, 410)
 
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(12)
@@ -220,7 +221,7 @@ export function ClientReport({ profile }: { profile: ClientProfile }) {
     doc.text('Expected Corpus at Retirement', margin + 14, tableY + 18)
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(10)
-    doc.text(`${projection ? formatINR(expectedCorpus) : '—'} over ${years || 0} years`, margin + 14, tableY + 36)
+    doc.text(`${projection ? formatINR(expectedCorpus) : 'ï¿½'} over ${years || 0} years`, margin + 14, tableY + 36)
 
     const notesY = tableY + 74
     doc.setFont('helvetica', 'bold')
@@ -285,17 +286,17 @@ export function ClientReport({ profile }: { profile: ClientProfile }) {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 text-sm">
             <Detail label="Prepared by" value="Mohana Kumar T" />
             <Detail label="Designation" value="AMFI Registered Mutual Fund Distributor" />
-            <Detail label="Client name" value={profile.name || '—'} />
+            <Detail label="Client name" value={profile.name || 'ï¿½'} />
             <Detail label="Risk profile" value={profile.riskProfile} />
           </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-          <SummaryCard label="Monthly SIP" value={sip ? formatINR(sip) : '—'} />
+          <SummaryCard label="Monthly SIP" value={sip ? formatINR(sip) : 'ï¿½'} />
           <SummaryCard label="Total Investment" value={formatINR(totalInvested)} />
           <SummaryCard label="Expected Corpus" value={formatINR(expectedCorpus)} />
           <SummaryCard label="Wealth Created" value={formatINR(wealthCreated)} />
-          <SummaryCard label="Wealth Multiple" value={wealthMultiple ? `${wealthMultiple.toFixed(2)}x` : '—'} />
+          <SummaryCard label="Wealth Multiple" value={wealthMultiple ? `${wealthMultiple.toFixed(2)}x` : 'ï¿½'} />
         </div>
 
         <div className="rounded-2xl border border-gold-200 bg-gold-50 p-4 mb-6">
@@ -303,9 +304,9 @@ export function ClientReport({ profile }: { profile: ClientProfile }) {
           <div className="grid gap-3 md:grid-cols-5 text-sm">
             <Detail label="Goal name" value={goalName} />
             <Detail label="Investment duration" value={`${years || 0} years`} />
-            <Detail label="Monthly SIP" value={sip ? formatINR(sip) : '—'} />
-            <Detail label="Expected return" value="12% p.a." />
-            <Detail label="Target corpus" value={projection ? formatINR(expectedCorpus) : '—'} />
+            <Detail label="Monthly SIP" value={sip ? formatINR(sip) : 'ï¿½'} />
+            <Detail label="Expected return" value={`${expectedReturn}% p.a.`} />
+            <Detail label="Target corpus" value={projection ? formatINR(expectedCorpus) : 'â€”'} />
           </div>
         </div>
 
@@ -399,7 +400,7 @@ export function ClientReport({ profile }: { profile: ClientProfile }) {
           <>
             <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
               <h3 className="font-display text-lg text-navy-900">SIP projection</h3>
-              <span className="text-sm text-navy-700/60">{years} years @ 12% p.a.</span>
+              <span className="text-sm text-navy-700/60">{years} years @ {expectedReturn}% p.a.</span>
             </div>
             <div className="grid sm:grid-cols-3 gap-3 mb-6">
               <Detail label="Total invested" value={formatINR(projection.totalInvested)} />

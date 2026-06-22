@@ -8,23 +8,24 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
-import { sipProjection, stepUpSipProjection, xirrApprox, formatINR } from '../utils/calculations'
+import { sipProjection, stepUpSipProjection, xirrApprox, formatINR, getRiskReturnAssumption } from '../utils/calculations'
+import type { ClientProfile } from '../types'
 import { Card, Field, NumberInput, SectionTitle, StatTile, YearlyTable } from './ui'
 
-export function SipCalculator() {
+export function SipCalculator({ profile }: { profile: ClientProfile }) {
   const [monthlySip, setMonthlySip] = useState<number | ''>(10000)
-  const [expectedReturn, setExpectedReturn] = useState<number | ''>(12)
   const [years, setYears] = useState<number | ''>(15)
+
+  const riskReturn = getRiskReturnAssumption(profile.riskProfile)
 
   const result = useMemo(() => {
     const m = Number(monthlySip) || 0
-    const r = Number(expectedReturn) || 0
     const y = Number(years) || 0
     if (m <= 0 || y <= 0) return null
-    const proj = sipProjection(m, r, y)
+    const proj = sipProjection(m, riskReturn, y)
     const xirr = xirrApprox(m, y, proj.corpus)
     return { ...proj, xirr }
-  }, [monthlySip, expectedReturn, years])
+  }, [monthlySip, years, riskReturn])
 
   return (
     <Card>
@@ -37,9 +38,11 @@ export function SipCalculator() {
         <Field label="Monthly SIP">
           <NumberInput value={monthlySip} onChange={setMonthlySip} suffix="₹" />
         </Field>
-        <Field label="Expected return">
-          <NumberInput value={expectedReturn} onChange={setExpectedReturn} suffix="% p.a." />
-        </Field>
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs uppercase tracking-[0.18em] text-navy-700/50">Expected return</p>
+          <p className="mt-1 text-2xl font-semibold text-navy-900">{riskReturn}%</p>
+          <p className="mt-1 text-xs text-navy-700/60">Based on {profile.riskProfile} risk profile</p>
+        </div>
         <Field label="Investment years">
           <NumberInput value={years} onChange={setYears} suffix="yrs" />
         </Field>
@@ -95,20 +98,20 @@ export function SipCalculator() {
   )
 }
 
-export function StepUpSipCalculator() {
+export function StepUpSipCalculator({ profile }: { profile: ClientProfile }) {
   const [monthlySip, setMonthlySip] = useState<number | ''>(10000)
   const [stepUp, setStepUp] = useState<number | ''>(10)
-  const [expectedReturn, setExpectedReturn] = useState<number | ''>(12)
   const [years, setYears] = useState<number | ''>(15)
+
+  const riskReturn = getRiskReturnAssumption(profile.riskProfile)
 
   const result = useMemo(() => {
     const m = Number(monthlySip) || 0
     const s = Number(stepUp) || 0
-    const r = Number(expectedReturn) || 0
     const y = Number(years) || 0
     if (m <= 0 || y <= 0) return null
-    return stepUpSipProjection(m, s, r, y)
-  }, [monthlySip, stepUp, expectedReturn, years])
+    return stepUpSipProjection(m, s, riskReturn, y)
+  }, [monthlySip, stepUp, years, riskReturn])
 
   return (
     <Card>
@@ -124,9 +127,11 @@ export function StepUpSipCalculator() {
         <Field label="Annual step-up">
           <NumberInput value={stepUp} onChange={setStepUp} suffix="%" />
         </Field>
-        <Field label="Expected return">
-          <NumberInput value={expectedReturn} onChange={setExpectedReturn} suffix="% p.a." />
-        </Field>
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs uppercase tracking-[0.18em] text-navy-700/50">Expected return</p>
+          <p className="mt-1 text-2xl font-semibold text-navy-900">{riskReturn}%</p>
+          <p className="mt-1 text-xs text-navy-700/60">Based on {profile.riskProfile} risk profile</p>
+        </div>
         <Field label="Years">
           <NumberInput value={years} onChange={setYears} suffix="yrs" />
         </Field>

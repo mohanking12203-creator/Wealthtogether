@@ -90,10 +90,10 @@ export default function App() {
           />
         )}
         {tab === 'portfolio' && <PortfolioEngine profile={profile} />}
-        {tab === 'sip' && <SipCalculator />}
-        {tab === 'stepup' && <StepUpSipCalculator />}
-        {tab === 'retirement' && <RetirementCalculator />}
-        {tab === 'education' && <ChildEducationCalculator />}
+        {tab === 'sip' && <SipCalculator profile={profile} />}
+        {tab === 'stepup' && <StepUpSipCalculator profile={profile} />}
+        {tab === 'retirement' && <RetirementCalculator profile={profile} />}
+        {tab === 'education' && <ChildEducationCalculator profile={profile} />}
         {tab === 'insurance' && <InsuranceCalculator />}
         {tab === 'aum' && <AumTracker />}
         {tab === 'report' && <ClientReport profile={profile} />}

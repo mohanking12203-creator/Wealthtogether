@@ -1,4 +1,14 @@
-import type { YearlyRow } from '../types'
+import type { RiskProfile, YearlyRow } from '../types'
+
+export const RISK_RETURN_ASSUMPTIONS: Record<RiskProfile, number> = {
+  Low: 10,
+  Moderate: 12,
+  High: 15,
+}
+
+export function getRiskReturnAssumption(riskProfile: RiskProfile): number {
+  return RISK_RETURN_ASSUMPTIONS[riskProfile]
+}
 
 /** Future value of a monthly SIP, compounded monthly, with yearly breakdown. */
 export function sipProjection(
