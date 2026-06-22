@@ -126,96 +126,154 @@ export function ChildEducationCalculator({ profile }: { profile: ClientProfile }
 
 export function InsuranceCalculator() {
   const [age, setAge] = useState<number | ''>(35)
-  const [annualIncome, setAnnualIncome] = useState<number | ''>(1200000)
-  const [existingInsurance, setExistingInsurance] = useState<number | ''>(500000)
-  const [liabilities, setLiabilities] = useState<number | ''>(2000000)
-  const [healthOption, setHealthOption] = useState<'Single' | 'Married Couple' | 'Family Floater'>(
-    'Single'
-  )
 
-  const recommendedCover = useMemo(() => {
-    const income = Number(annualIncome) || 0
-    const existing = Number(existingInsurance) || 0
-    const liabilitiesValue = Number(liabilities) || 0
-    return Math.max(0, income * 20 + liabilitiesValue - existing)
-  }, [annualIncome, existingInsurance, liabilities])
+  const ageValue = Number(age) || 0
 
-  const healthRecommendations: Record<string, string> = {
-    Single: '₹10 lakh',
-    'Married Couple': '₹15 lakh',
-    'Family Floater': '₹25 lakh'
-  }
+  const recommendation = useMemo(() => {
+    if (ageValue >= 45) {
+      return {
+        title: 'Custom Insurance Review',
+        term: 'Custom review needed',
+        health: 'Custom review needed',
+      }
+    }
+    if (ageValue >= 30) {
+      return {
+        title: 'Recommended for ages 30–45',
+        term: '₹2 Crore Term Insurance',
+        health: '₹20 Lakh Health Insurance',
+      }
+    }
+    return {
+      title: 'Recommended for ages 20–30',
+      term: '₹1 Crore Term Insurance',
+      health: '₹10 Lakh Health Insurance',
+    }
+  }, [ageValue])
 
-  const healthRecommendation = healthRecommendations[healthOption]
+  const termPlans = [
+    {
+      cover: '₹50 Lakh Cover',
+      premium: 'Approx ₹500/month',
+      note: 'Ideal for starter protection',
+    },
+    {
+      cover: '₹1 Crore Cover',
+      premium: 'Approx ₹900/month',
+      note: 'Balanced family protection',
+    },
+    {
+      cover: '₹2 Crore Cover',
+      premium: 'Approx ₹1,800/month',
+      note: 'Higher protection for growing responsibilities',
+    },
+  ]
+
+  const healthPlans = [
+    {
+      label: 'Individual Plan',
+      coverage: '₹10 Lakh',
+      premium: '₹800/month',
+    },
+    {
+      label: 'Family Floater',
+      coverage: '₹20 Lakh',
+      premium: '₹1,800/month',
+    },
+  ]
 
   return (
     <Card>
       <SectionTitle
         eyebrow="Module 07"
-        title="Insurance Calculator"
-        description="Estimate term cover using income, liabilities, and current protection, plus a simple health insurance recommendation."
+        title="Insurance Solutions"
+        description="Recommended insurance products, premium estimates, and guidance tailored to your age profile."
       />
-      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-5">
-          <div className="flex items-center justify-between gap-3 mb-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.18em] text-gold-600">Term insurance</p>
-              <h3 className="font-display text-xl text-navy-900">Recommended cover</h3>
+
+      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <div className="space-y-6">
+          <section className="rounded-2xl border border-navy-900/10 bg-gradient-to-br from-white to-slate-50 p-5">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-gold-600">Section 1</p>
+                <h3 className="font-display text-2xl text-navy-900">Term Insurance</h3>
+              </div>
+              <span className="rounded-full bg-gold-50 px-3 py-1 text-xs font-medium text-gold-700">
+                HDFC Life Click 2 Protect Supreme
+              </span>
             </div>
-            <span className="rounded-full bg-gold-50 px-3 py-1 text-xs font-medium text-gold-700">
-              20 × income + liabilities - existing cover
-            </span>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+            <p className="text-sm text-navy-700/70 mb-4">
+              Suitable for individuals aged 22–45
+            </p>
+            <div className="grid gap-3 md:grid-cols-3">
+              {termPlans.map((plan) => (
+                <div key={plan.cover} className="rounded-2xl border border-slate-200 bg-white p-4">
+                  <p className="text-sm font-semibold text-navy-900">{plan.cover}</p>
+                  <p className="mt-2 text-lg font-semibold text-gold-700">{plan.premium}</p>
+                  <p className="mt-1 text-xs text-navy-700/60">{plan.note}</p>
+                </div>
+              ))}
+            </div>
+            <ul className="mt-4 space-y-2 text-sm text-navy-700/75">
+              <li>• Family income protection</li>
+              <li>• Low premium</li>
+              <li>• High coverage</li>
+            </ul>
+          </section>
+
+          <section className="rounded-2xl border border-navy-900/10 bg-gradient-to-br from-navy-950 to-navy-900 p-5 text-white">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-gold-300">Section 2</p>
+                <h3 className="font-display text-2xl">Health Insurance</h3>
+              </div>
+              <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-gold-200">
+                HDFC ERGO Optima Secure
+              </span>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              {healthPlans.map((plan) => (
+                <div key={plan.label} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-sm text-white/70">{plan.label}</p>
+                  <p className="mt-1 text-2xl font-semibold text-gold-300">{plan.coverage}</p>
+                  <p className="mt-2 text-sm font-medium">Estimated Premium: {plan.premium}</p>
+                </div>
+              ))}
+            </div>
+            <ul className="mt-4 space-y-2 text-sm text-white/80">
+              <li>• Hospitalization coverage</li>
+              <li>• Medical emergency protection</li>
+              <li>• Cashless treatment</li>
+            </ul>
+          </section>
+        </div>
+
+        <aside className="rounded-2xl border border-navy-900/10 bg-gradient-to-br from-gold-50 to-white p-5">
+          <p className="text-xs uppercase tracking-[0.18em] text-gold-700">Section 3</p>
+          <h3 className="font-display text-2xl text-navy-900 mt-1">WealthTogether Recommendation</h3>
+
+          <div className="mt-4">
             <Field label="Age">
               <NumberInput value={age} onChange={setAge} suffix="yrs" />
             </Field>
-            <Field label="Annual income">
-              <NumberInput value={annualIncome} onChange={setAnnualIncome} suffix="₹" />
-            </Field>
-            <Field label="Existing insurance">
-              <NumberInput value={existingInsurance} onChange={setExistingInsurance} suffix="₹" />
-            </Field>
-            <Field label="Liabilities">
-              <NumberInput value={liabilities} onChange={setLiabilities} suffix="₹" />
-            </Field>
           </div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <StatTile label="Recommended cover" value={formatINR(recommendedCover)} accent />
-            <StatTile label="Age input" value={age ? `${age} yrs` : '—'} />
-          </div>
-        </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-navy-950 to-navy-900 p-5 text-white">
-          <p className="text-xs uppercase tracking-[0.18em] text-gold-300">Health insurance</p>
-          <h3 className="font-display text-xl mt-1">Suggested coverage</h3>
-          <div className="mt-4 grid gap-3">
-            {(['Single', 'Married Couple', 'Family Floater'] as const).map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => setHealthOption(option)}
-                className={`rounded-2xl border p-4 text-left transition-colors ${
-                  healthOption === option
-                    ? 'border-gold-400 bg-gold-500/10'
-                    : 'border-white/10 bg-white/5 hover:bg-white/10'
-                }`}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-semibold">{option}</p>
-                    <p className="text-xs text-white/65">Recommended coverage</p>
-                  </div>
-                  <span className="text-sm font-semibold text-gold-300">{healthRecommendations[option]}</span>
-                </div>
-              </button>
-            ))}
+          <div className="mt-4 rounded-2xl bg-navy-900 p-4 text-white">
+            <p className="text-xs uppercase tracking-[0.18em] text-gold-300">Age-based suggestion</p>
+            <p className="mt-2 text-sm font-semibold">{recommendation.title}</p>
+            <ul className="mt-3 space-y-2 text-sm text-white/85">
+              <li>✓ {recommendation.term}</li>
+              <li>✓ {recommendation.health}</li>
+            </ul>
           </div>
-          <div className="mt-5 rounded-2xl bg-white/5 p-4">
-            <p className="text-xs uppercase tracking-[0.18em] text-white/65">Selected option</p>
-            <p className="mt-1 text-2xl font-semibold text-gold-300">{healthRecommendation}</p>
+
+          <div className="mt-4 rounded-2xl border border-navy-900/10 bg-white p-4 text-sm text-navy-700/75">
+            <p className="font-medium text-navy-900">Disclaimer</p>
+            <p className="mt-1">
+              Premiums are indicative only and may vary based on age, health condition, occupation, and insurer underwriting.
+            </p>
           </div>
-        </section>
+        </aside>
       </div>
     </Card>
   )

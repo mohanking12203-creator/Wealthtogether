@@ -19,7 +19,7 @@ const TABS = [
   { id: 'stepup', label: 'Step-Up SIP' },
   { id: 'retirement', label: 'Retirement' },
   { id: 'education', label: 'Child Education' },
-  { id: 'insurance', label: 'Insurance' },
+  { id: 'insurance', label: 'Insurance Solutions' },
   { id: 'aum', label: 'AUM Tracker' },
   { id: 'report', label: 'Client Report' },
   { id: 'admin', label: 'Admin Panel' },
