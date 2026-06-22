@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f6f4ee;
+  color: #0a1530;
+}
+
+.font-display {
+  font-family: 'Fraunces', serif;
+}
+
+.font-mono-num {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* signature ledger-rule divider */
+.ledger-rule {
+  background-image: repeating-linear-gradient(
+    90deg,
+    #c4943a 0,
+    #c4943a 6px,
+    transparent 6px,
+    transparent 12px
+  );
+  height: 2px;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #d9ad4a;
+  border-radius: 4px;
+}
+
+:focus-visible {
+  outline: 2px solid #c4943a;
+  outline-offset: 2px;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+  }
+  .print-area {
+    box-shadow: none !important;
+  }
+}
