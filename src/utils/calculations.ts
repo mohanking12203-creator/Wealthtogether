@@ -179,43 +179,119 @@ export function validateFundAllocation(
     }
   }
 
+  const rows = allocations.map((allocation) => ({
+    ...allocation,
+    monthlyAmount: 0,
+  }))
+
+  const flexiIndex = rows.findIndex((row) => row.fund.toLowerCase().includes('flexi cap'))
+  const midIndex = rows.findIndex((row) => row.fund.toLowerCase().includes('mid cap'))
+  const dividendIndex = rows.findIndex((row) => row.fund.toLowerCase().includes('dividend yield'))
+  const smallIndex = rows.findIndex((row) => row.fund.toLowerCase().includes('small cap'))
+  const contraIndex = rows.findIndex((row) => row.fund.toLowerCase().includes('contra'))
+
+  const fixedContra = 500
+  let warning: string | null = null
+
+  const tierWeights =
+    monthlySip >= 10000
+      ? {
+          flexi: 0.35,
+          mid: 0.25,
+          contra: 0.05,
+          dividend: 0.15,
+          small: 0.2,
+        }
+      : monthlySip >= 8000
+        ? {
+            flexi: 0.4375,
+            mid: 0.25,
+            contra: 0.0625,
+            dividend: 0.25,
+          }
+        : monthlySip >= 6000
+          ? {
+              flexi: 0.5,
+              mid: 0.4167,
+              contra: 0.0833,
+            }
+          : monthlySip >= 4000
+            ? {
+                flexi: 0.5,
+                mid: 0.375,
+                contra: 0.125,
+              }
+            : null
+
+  if (tierWeights) {
+    if (contraIndex >= 0) {
+      rows[contraIndex].monthlyAmount = fixedContra
+      warning = null
+    }
+
+    const totalToDistribute = Math.max(monthlySip - fixedContra, 0)
+    const candidateAmounts: Array<{ index: number; amount: number }> = []
+    const dividendWeight = tierWeights.dividend ?? 0
+    const smallWeight = tierWeights.small ?? 0
+
+    if (flexiIndex >= 0) {
+      candidateAmounts.push({
+        index: flexiIndex,
+        amount: Math.round(totalToDistribute * tierWeights.flexi),
+      })
+    }
+    if (midIndex >= 0) {
+      candidateAmounts.push({
+        index: midIndex,
+        amount: Math.round(totalToDistribute * tierWeights.mid),
+      })
+    }
+    if (dividendIndex >= 0 && dividendWeight > 0) {
+      candidateAmounts.push({
+        index: dividendIndex,
+        amount: Math.round(totalToDistribute * dividendWeight),
+      })
+    }
+    if (smallIndex >= 0 && smallWeight > 0) {
+      candidateAmounts.push({
+        index: smallIndex,
+        amount: Math.round(totalToDistribute * smallWeight),
+      })
+    }
+
+    const allocatedAmount = candidateAmounts.reduce((sum, item) => sum + item.amount, 0)
+    const residual = monthlySip - fixedContra - allocatedAmount
+
+    if (flexiIndex >= 0 && residual !== 0) {
+      rows[flexiIndex].monthlyAmount += residual
+    }
+
+    candidateAmounts.forEach((item) => {
+      rows[item.index].monthlyAmount += item.amount
+    })
+
+    const validatedAllocations = rows.map((row) => ({
+      ...row,
+      percent: monthlySip > 0 ? Math.round((row.monthlyAmount / monthlySip) * 100) : 0,
+    }))
+
+    return {
+      validatedAllocations,
+      warning,
+    }
+  }
+
   const baseRows = allocations.map((allocation) => ({
     ...allocation,
     monthlyAmount: Math.round((monthlySip * allocation.percent) / 100),
   }))
 
-  const flexiIndex = baseRows.findIndex((row) => row.fund.toLowerCase().includes('flexi cap'))
-  let warning: string | null = null
-
-  const hasContraBelowMinimum = baseRows.some(
-    (row) => row.fund.toLowerCase().includes('contra') && row.monthlyAmount < 500
-  )
-
-  if (hasContraBelowMinimum && flexiIndex >= 0) {
-    warning = 'Contra Fund requires minimum SIP of ₹500.'
-    const amountToReallocate = baseRows
-      .filter((row) => row.fund.toLowerCase().includes('contra'))
-      .reduce((sum, row) => sum + Math.min(row.monthlyAmount, 500), 0)
-    baseRows[flexiIndex].monthlyAmount += amountToReallocate
-  }
-
-  const validatedRows = baseRows.filter((row) => {
-    const name = row.fund.toLowerCase()
-    if (name.includes('small cap') && monthlySip < 10000) return false
-    if (name.includes('dividend yield') && monthlySip < 8000) return false
-    if (name.includes('contra') && monthlySip < 4000) return false
-    if (name.includes('contra') && row.monthlyAmount < 500) return false
-    return true
-  })
-
-  const validatedAllocations = validatedRows.map((row) => ({
-    ...row,
-    percent: row.percent,
-  }))
-
   return {
-    validatedAllocations,
-    warning,
+    validatedAllocations: baseRows.map((row) => ({
+      ...row,
+      percent: monthlySip > 0 ? Math.round((row.monthlyAmount / monthlySip) * 100) : 0,
+    })),
+    warning: null,
   }
 }
 
