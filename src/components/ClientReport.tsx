@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import type { ClientProfile } from '../types'
+import type { ClientProfile, DebtReportSummary } from '../types'
 import { PORTFOLIOS } from '../data/funds'
 import {
   sipProjection,
@@ -30,7 +30,13 @@ const ADVISOR_NOTES = [
   'Prioritise long-term investing and keep emergency reserves separate from market-linked assets.'
 ]
 
-export function ClientReport({ profile }: { profile: ClientProfile }) {
+export function ClientReport({
+  profile,
+  debtSummary,
+}: {
+  profile: ClientProfile
+  debtSummary?: DebtReportSummary | null
+}) {
   const sip = Number(profile.monthlySip) || 0
   const years = Number(profile.durationYears) || 0
   const allocation = PORTFOLIOS[profile.riskProfile]
@@ -52,6 +58,8 @@ export function ClientReport({ profile }: { profile: ClientProfile }) {
   const goalName = profile.name ? `${profile.name.split(' ')[0]}'s Wealth Goal` : 'Personal Wealth Goal'
   const monthlyFundAllocation = validatedAllocations
   const riskProfileExplanation = RISK_PROFILE_EXPLANATION[profile.riskProfile]
+
+  const [includeDebtPlanner, setIncludeDebtPlanner] = useState(false)
 
   const handleDownloadPdf = () => {
     const doc = new jsPDF({ unit: 'pt', format: 'a4' })
@@ -242,6 +250,45 @@ export function ClientReport({ profile }: { profile: ClientProfile }) {
       doc.text(note, margin + 10, notesY + 24 + index * 16)
     })
 
+    if (includeDebtPlanner && debtSummary) {
+      doc.addPage()
+      const debtPageY = 80
+
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(18)
+      doc.text('Debt Freedom Summary', margin, debtPageY)
+
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(10)
+      doc.text(`Debt health score: ${debtSummary.debtHealthScore}/100`, margin, debtPageY + 28)
+      doc.text(
+        `Debt-to-income ratio: ${debtSummary.debtToIncomeRatio.toFixed(1)}%`,
+        margin,
+        debtPageY + 44
+      )
+      doc.text(`Recommendation: ${debtSummary.recommendation}`, margin, debtPageY + 68)
+
+      const explanationLines = doc.splitTextToSize(
+        debtSummary.explanation,
+        pageWidth - margin * 2
+      )
+      doc.text(explanationLines, margin, debtPageY + 88)
+
+      if (debtSummary.areasToImprove.length > 0) {
+        const listStartY = debtPageY + 104 + explanationLines.length * 12
+        doc.setFont('helvetica', 'bold')
+        doc.text('Areas to improve', margin, listStartY)
+
+        doc.setFont('helvetica', 'normal')
+            const areaLines = debtSummary.areasToImprove.flatMap((item) =>
+        doc
+          .splitTextToSize(item, pageWidth - margin * 2 - 12)
+          .map((line: string, index: number) => (index === 0 ? `• ${line}` : `  ${line}`))
+      )
+        doc.text(areaLines, margin, listStartY + 18)
+      }
+    }
+
     const totalPages = doc.getNumberOfPages()
     for (let i = 1; i <= totalPages; i += 1) {
       doc.setPage(i)
@@ -258,7 +305,22 @@ export function ClientReport({ profile }: { profile: ClientProfile }) {
         <p className="text-sm text-navy-700/60">
           Download a polished PDF report for your client or share a print-ready version.
         </p>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {debtSummary ? (
+            <label className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-2 text-sm text-navy-700">
+              <input
+                type="checkbox"
+                checked={includeDebtPlanner}
+                onChange={(e) => setIncludeDebtPlanner(e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-gold-500 focus:ring-gold-500"
+              />
+              Include Debt Freedom summary
+            </label>
+          ) : (
+            <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-navy-600">
+              Run the Debt Freedom planner to include a debt summary in the PDF
+            </div>
+          )}
           <button
             onClick={handleDownloadPdf}
             className="rounded-lg bg-gold-600 text-navy-900 px-5 py-2.5 text-sm font-semibold hover:bg-gold-500 transition-colors"
@@ -321,6 +383,18 @@ export function ClientReport({ profile }: { profile: ClientProfile }) {
             <Detail label="Target corpus" value={projection ? formatINR(expectedCorpus) : '—'} />
           </div>
         </div>
+
+        {debtSummary && (
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 mb-6">
+            <p className="text-xs uppercase tracking-wide text-gold-700 mb-2">Debt Freedom summary</p>
+            <div className="grid gap-3 md:grid-cols-3 text-sm">
+              <Detail label="Debt health score" value={`${debtSummary.debtHealthScore}/100`} />
+              <Detail label="DTI ratio" value={`${debtSummary.debtToIncomeRatio.toFixed(1)}%`} />
+              <Detail label="Recommendation" value={debtSummary.recommendation} />
+            </div>
+            <p className="mt-3 text-sm leading-6 text-navy-700/80">{debtSummary.explanation}</p>
+          </div>
+        )}
 
         <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] mb-8">
           <div>

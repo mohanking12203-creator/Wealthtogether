@@ -28,6 +28,14 @@ export interface Lead {
   goal: LeadGoal
 }
 
+export interface DebtReportSummary {
+  debtHealthScore: number
+  debtToIncomeRatio: number
+  recommendation: string
+  explanation: string
+  areasToImprove: string[]
+}
+
 export interface Fund {
   name: string
   category: string

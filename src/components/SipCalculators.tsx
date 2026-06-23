@@ -13,17 +13,14 @@ import type { ClientProfile } from '../types'
 import { Card, Field, NumberInput, SectionTitle, StatTile, YearlyTable } from './ui'
 
 export function SipCalculator({ profile }: { profile: ClientProfile }) {
-  const [monthlySip, setMonthlySip] = useState<number | ''>(10000)
-  const [years, setYears] = useState<number | ''>(15)
-
   const riskReturn = getRiskReturnAssumption(profile.riskProfile)
+  const monthlySip = Number(profile.monthlySip) || 0
+  const years = Number(profile.durationYears) || 0
 
   const result = useMemo(() => {
-    const m = Number(monthlySip) || 0
-    const y = Number(years) || 0
-    if (m <= 0 || y <= 0) return null
-    const proj = sipProjection(m, riskReturn, y)
-    const xirr = xirrApprox(m, y, proj.corpus)
+    if (monthlySip <= 0 || years <= 0) return null
+    const proj = sipProjection(monthlySip, riskReturn, years)
+    const xirr = xirrApprox(monthlySip, years, proj.corpus)
     return { ...proj, xirr }
   }, [monthlySip, years, riskReturn])
 
@@ -32,20 +29,26 @@ export function SipCalculator({ profile }: { profile: ClientProfile }) {
       <SectionTitle
         eyebrow="Module 03"
         title="SIP Projection Calculator"
-        description="Monthly-compounding future value of a level SIP, with a year-by-year growth table."
+        description="A level SIP projection driven by the Client Profile monthly SIP, duration and risk profile."
       />
-      <div className="grid sm:grid-cols-3 gap-4 mb-6">
-        <Field label="Monthly SIP">
-          <NumberInput value={monthlySip} onChange={setMonthlySip} suffix="₹" />
-        </Field>
+      <div className="grid gap-4 sm:grid-cols-3 mb-6">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs uppercase tracking-[0.18em] text-navy-700/50">Monthly SIP</p>
+          <p className="mt-2 text-2xl font-semibold text-navy-900">
+            ₹{monthlySip ? monthlySip.toLocaleString('en-IN') : '0'}
+          </p>
+          <p className="mt-1 text-xs text-navy-700/60">Managed from Client Profile</p>
+        </div>
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <p className="text-xs uppercase tracking-[0.18em] text-navy-700/50">Expected return</p>
-          <p className="mt-1 text-2xl font-semibold text-navy-900">{riskReturn}%</p>
+          <p className="mt-2 text-2xl font-semibold text-navy-900">{riskReturn}%</p>
           <p className="mt-1 text-xs text-navy-700/60">Based on {profile.riskProfile} risk profile</p>
         </div>
-        <Field label="Investment years">
-          <NumberInput value={years} onChange={setYears} suffix="yrs" />
-        </Field>
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs uppercase tracking-[0.18em] text-navy-700/50">Investment years</p>
+          <p className="mt-2 text-2xl font-semibold text-navy-900">{years || 0}</p>
+          <p className="mt-1 text-xs text-navy-700/60">Driven from Client Profile</p>
+        </div>
       </div>
 
       {result ? (
@@ -99,16 +102,15 @@ export function SipCalculator({ profile }: { profile: ClientProfile }) {
 }
 
 export function StepUpSipCalculator({ profile }: { profile: ClientProfile }) {
-  const [monthlySip, setMonthlySip] = useState<number | ''>(10000)
-  const [stepUp, setStepUp] = useState<number | ''>(10)
-  const [years, setYears] = useState<number | ''>(15)
-
   const riskReturn = getRiskReturnAssumption(profile.riskProfile)
+  const monthlySip = Number(profile.monthlySip) || 0
+  const years = Number(profile.durationYears) || 0
+  const [stepUp, setStepUp] = useState<number | ''>(10)
 
   const result = useMemo(() => {
-    const m = Number(monthlySip) || 0
+    const m = monthlySip
     const s = Number(stepUp) || 0
-    const y = Number(years) || 0
+    const y = years
     if (m <= 0 || y <= 0) return null
     return stepUpSipProjection(m, s, riskReturn, y)
   }, [monthlySip, stepUp, years, riskReturn])
@@ -118,23 +120,27 @@ export function StepUpSipCalculator({ profile }: { profile: ClientProfile }) {
       <SectionTitle
         eyebrow="Module 04"
         title="Step-Up SIP Calculator"
-        description="Contribution rises every year by the chosen step-up percentage, compounding monthly on top of growth."
+        description="A step-up SIP model that uses Client Profile SIP, duration and risk return, with only the step-up percentage entered here."
       />
-      <div className="grid sm:grid-cols-4 gap-4 mb-6">
-        <Field label="Starting monthly SIP">
-          <NumberInput value={monthlySip} onChange={setMonthlySip} suffix="₹" />
-        </Field>
+      <div className="grid gap-4 sm:grid-cols-4 mb-6">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs uppercase tracking-[0.18em] text-navy-700/50">Starting monthly SIP</p>
+          <p className="mt-2 text-2xl font-semibold text-navy-900">₹{monthlySip ? monthlySip.toLocaleString('en-IN') : '0'}</p>
+          <p className="mt-1 text-xs text-navy-700/60">Sourced from Client Profile</p>
+        </div>
         <Field label="Annual step-up">
           <NumberInput value={stepUp} onChange={setStepUp} suffix="%" />
         </Field>
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <p className="text-xs uppercase tracking-[0.18em] text-navy-700/50">Expected return</p>
-          <p className="mt-1 text-2xl font-semibold text-navy-900">{riskReturn}%</p>
+          <p className="mt-2 text-2xl font-semibold text-navy-900">{riskReturn}%</p>
           <p className="mt-1 text-xs text-navy-700/60">Based on {profile.riskProfile} risk profile</p>
         </div>
-        <Field label="Years">
-          <NumberInput value={years} onChange={setYears} suffix="yrs" />
-        </Field>
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs uppercase tracking-[0.18em] text-navy-700/50">Years</p>
+          <p className="mt-2 text-2xl font-semibold text-navy-900">{years || 0}</p>
+          <p className="mt-1 text-xs text-navy-700/60">Sourced from Client Profile</p>
+        </div>
       </div>
 
       {result ? (
