@@ -132,53 +132,106 @@ export function InsuranceCalculator() {
   const recommendation = useMemo(() => {
     if (ageValue >= 45) {
       return {
-        title: 'Custom Insurance Review',
-        term: 'Custom review needed',
-        health: 'Custom review needed',
+        title: 'Age 45+',
+        termPlan: 'Custom Review Required',
+        healthPlan: 'Custom Review Required',
       }
     }
     if (ageValue >= 30) {
       return {
-        title: 'Recommended for ages 30–45',
-        term: '₹2 Crore Term Insurance',
-        health: '₹20 Lakh Health Insurance',
+        title: 'Age 30-45',
+        termPlan: 'Wealth Protection Plan',
+        healthPlan: 'Family Protection Plan',
       }
     }
     return {
-      title: 'Recommended for ages 20–30',
-      term: '₹1 Crore Term Insurance',
-      health: '₹10 Lakh Health Insurance',
+      title: 'Age 20-30',
+      termPlan: 'Growth Protection Plan',
+      healthPlan: 'Essential Health Plan',
     }
   }, [ageValue])
 
   const termPlans = [
     {
-      cover: '₹50 Lakh Cover',
-      premium: 'Approx ₹500/month',
-      note: 'Ideal for starter protection',
+      name: 'Essential Protection Plan',
+      recommendedFor: 'Young professionals',
+      product: 'HDFC Life Click 2 Protect Supreme',
+      coverage: '₹50 Lakh',
+      premium: '₹500/month',
+      benefits: [
+        'Basic family protection',
+        'Affordable premium',
+        'Suitable for beginners',
+      ],
+      isRecommended: recommendation.termPlan === 'Essential Protection Plan',
     },
     {
-      cover: '₹1 Crore Cover',
-      premium: 'Approx ₹900/month',
-      note: 'Balanced family protection',
+      name: 'Growth Protection Plan',
+      recommendedFor: 'Salaried individuals',
+      product: 'Axis Max Life Smart Term Plan',
+      coverage: '₹1 Crore',
+      premium: '₹900/month',
+      benefits: [
+        'Higher coverage',
+        'Income replacement',
+        'Long-term security',
+      ],
+      isRecommended: recommendation.termPlan === 'Growth Protection Plan',
     },
     {
-      cover: '₹2 Crore Cover',
-      premium: 'Approx ₹1,800/month',
-      note: 'Higher protection for growing responsibilities',
+      name: 'Wealth Protection Plan',
+      recommendedFor: 'High earners',
+      product: 'Tata AIA Sampoorna Raksha Promise',
+      coverage: '₹2 Crore',
+      premium: '₹1,800/month',
+      benefits: [
+        'Maximum protection',
+        'Family wealth security',
+        'Suitable for long-term planning',
+      ],
+      isRecommended: recommendation.termPlan === 'Wealth Protection Plan',
     },
   ]
 
   const healthPlans = [
     {
-      label: 'Individual Plan',
+      name: 'Essential Health Plan',
+      product: 'HDFC ERGO Optima Secure',
       coverage: '₹10 Lakh',
-      premium: '₹800/month',
+      individual: '₹800/month',
+      family: '₹1,200/month',
+      benefits: [
+        'Hospitalization coverage',
+        'Medical emergency protection',
+        'Cashless treatment',
+      ],
+      isRecommended: recommendation.healthPlan === 'Essential Health Plan',
     },
     {
-      label: 'Family Floater',
+      name: 'Family Protection Plan',
+      product: 'Niva Bupa ReAssure 2.0',
       coverage: '₹20 Lakh',
-      premium: '₹1,800/month',
+      individual: '₹1,200/month',
+      family: '₹1,800/month',
+      benefits: [
+        'Family-focused coverage',
+        'Higher hospitalization limit',
+        'Comprehensive protection',
+      ],
+      isRecommended: recommendation.healthPlan === 'Family Protection Plan',
+    },
+    {
+      name: 'Premium Health Plan',
+      product: 'ICICI Lombard Elevate',
+      coverage: '₹50 Lakh',
+      individual: '₹2,000/month',
+      family: '₹3,000/month',
+      benefits: [
+        'Premium medical cover',
+        'Higher claim flexibility',
+        'Strong protection for larger families',
+      ],
+      isRecommended: recommendation.healthPlan === 'Premium Health Plan',
     },
   ]
 
@@ -187,7 +240,7 @@ export function InsuranceCalculator() {
       <SectionTitle
         eyebrow="Module 07"
         title="Insurance Solutions"
-        description="Recommended insurance products, premium estimates, and guidance tailored to your age profile."
+        description="Compare insurance plans side by side and get tailored recommendations based on your age profile."
       />
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
@@ -195,62 +248,95 @@ export function InsuranceCalculator() {
           <section className="rounded-2xl border border-navy-900/10 bg-gradient-to-br from-white to-slate-50 p-5">
             <div className="flex items-center justify-between gap-3 mb-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-gold-600">Section 1</p>
-                <h3 className="font-display text-2xl text-navy-900">Term Insurance</h3>
+                <p className="text-xs uppercase tracking-[0.18em] text-gold-600">Term Insurance</p>
+                <h3 className="font-display text-2xl text-navy-900">Coverage Options</h3>
               </div>
-              <span className="rounded-full bg-gold-50 px-3 py-1 text-xs font-medium text-gold-700">
-                HDFC Life Click 2 Protect Supreme
-              </span>
             </div>
-            <p className="text-sm text-navy-700/70 mb-4">
-              Suitable for individuals aged 22–45
-            </p>
-            <div className="grid gap-3 md:grid-cols-3">
+            <div className="grid gap-4 lg:grid-cols-3">
               {termPlans.map((plan) => (
-                <div key={plan.cover} className="rounded-2xl border border-slate-200 bg-white p-4">
-                  <p className="text-sm font-semibold text-navy-900">{plan.cover}</p>
-                  <p className="mt-2 text-lg font-semibold text-gold-700">{plan.premium}</p>
-                  <p className="mt-1 text-xs text-navy-700/60">{plan.note}</p>
-                </div>
+                <article
+                  key={plan.name}
+                  className={`relative rounded-2xl border p-5 transition-all ${
+                    plan.isRecommended
+                      ? 'border-gold-400 bg-gradient-to-br from-gold-50 to-white shadow-md'
+                      : 'border-slate-200 bg-white hover:border-navy-900/20'
+                  }`}
+                >
+                  {plan.isRecommended && (
+                    <span className="absolute right-4 top-4 rounded-full bg-navy-900 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-gold-300">
+                      Most Recommended
+                    </span>
+                  )}
+                  <p className="text-xs uppercase tracking-[0.18em] text-gold-600">{plan.recommendedFor}</p>
+                  <h4 className="mt-2 font-display text-xl text-navy-900">{plan.name}</h4>
+                  <p className="mt-1 text-sm text-navy-700/70">{plan.product}</p>
+                  <div className="mt-4 rounded-2xl bg-navy-900 p-3 text-white">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-gold-300">Coverage</p>
+                    <p className="mt-1 text-2xl font-semibold">{plan.coverage}</p>
+                    <p className="mt-1 text-sm text-gold-100">{plan.premium}</p>
+                  </div>
+                  <ul className="mt-4 space-y-2 text-sm text-navy-700/75">
+                    {plan.benefits.map((benefit) => (
+                      <li key={benefit}>• {benefit}</li>
+                    ))}
+                  </ul>
+                  <button className="mt-5 w-full rounded-xl bg-gold-500 px-4 py-2.5 text-sm font-semibold text-navy-900 transition hover:bg-gold-400">
+                    Request Consultation
+                  </button>
+                </article>
               ))}
             </div>
-            <ul className="mt-4 space-y-2 text-sm text-navy-700/75">
-              <li>• Family income protection</li>
-              <li>• Low premium</li>
-              <li>• High coverage</li>
-            </ul>
           </section>
 
           <section className="rounded-2xl border border-navy-900/10 bg-gradient-to-br from-navy-950 to-navy-900 p-5 text-white">
             <div className="flex items-center justify-between gap-3 mb-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-gold-300">Section 2</p>
-                <h3 className="font-display text-2xl">Health Insurance</h3>
+                <p className="text-xs uppercase tracking-[0.18em] text-gold-300">Health Insurance</p>
+                <h3 className="font-display text-2xl">Coverage Options</h3>
               </div>
-              <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-gold-200">
-                HDFC ERGO Optima Secure
-              </span>
             </div>
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid gap-4 lg:grid-cols-3">
               {healthPlans.map((plan) => (
-                <div key={plan.label} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-sm text-white/70">{plan.label}</p>
-                  <p className="mt-1 text-2xl font-semibold text-gold-300">{plan.coverage}</p>
-                  <p className="mt-2 text-sm font-medium">Estimated Premium: {plan.premium}</p>
-                </div>
+                <article
+                  key={plan.name}
+                  className={`relative rounded-2xl border p-5 transition-all ${
+                    plan.isRecommended
+                      ? 'border-gold-400 bg-gradient-to-br from-gold-500/10 to-white/5'
+                      : 'border-white/10 bg-white/5 hover:bg-white/10'
+                  }`}
+                >
+                  {plan.isRecommended && (
+                    <span className="absolute right-4 top-4 rounded-full bg-gold-400 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-navy-900">
+                      Most Recommended
+                    </span>
+                  )}
+                  <h4 className="mt-2 font-display text-xl">{plan.name}</h4>
+                  <p className="mt-1 text-sm text-white/70">{plan.product}</p>
+                  <div className="mt-4 rounded-2xl bg-white/5 p-4">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-white/65">Coverage</p>
+                    <p className="mt-1 text-2xl font-semibold text-gold-300">{plan.coverage}</p>
+                    <div className="mt-3 space-y-1 text-sm">
+                      <p><span className="text-white/70">Individual:</span> {plan.individual}</p>
+                      <p><span className="text-white/70">Family:</span> {plan.family}</p>
+                    </div>
+                  </div>
+                  <ul className="mt-4 space-y-2 text-sm text-white/80">
+                    {plan.benefits.map((benefit) => (
+                      <li key={benefit}>• {benefit}</li>
+                    ))}
+                  </ul>
+                  <button className="mt-5 w-full rounded-xl bg-gold-500 px-4 py-2.5 text-sm font-semibold text-navy-900 transition hover:bg-gold-400">
+                    Request Consultation
+                  </button>
+                </article>
               ))}
             </div>
-            <ul className="mt-4 space-y-2 text-sm text-white/80">
-              <li>• Hospitalization coverage</li>
-              <li>• Medical emergency protection</li>
-              <li>• Cashless treatment</li>
-            </ul>
           </section>
         </div>
 
         <aside className="rounded-2xl border border-navy-900/10 bg-gradient-to-br from-gold-50 to-white p-5">
-          <p className="text-xs uppercase tracking-[0.18em] text-gold-700">Section 3</p>
-          <h3 className="font-display text-2xl text-navy-900 mt-1">WealthTogether Recommendation</h3>
+          <p className="text-xs uppercase tracking-[0.18em] text-gold-700">WealthTogether Recommendation Engine</p>
+          <h3 className="font-display text-2xl text-navy-900 mt-1">Tailored Advice</h3>
 
           <div className="mt-4">
             <Field label="Age">
@@ -259,18 +345,17 @@ export function InsuranceCalculator() {
           </div>
 
           <div className="mt-4 rounded-2xl bg-navy-900 p-4 text-white">
-            <p className="text-xs uppercase tracking-[0.18em] text-gold-300">Age-based suggestion</p>
-            <p className="mt-2 text-sm font-semibold">{recommendation.title}</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-gold-300">Recommended for {recommendation.title}</p>
             <ul className="mt-3 space-y-2 text-sm text-white/85">
-              <li>✓ {recommendation.term}</li>
-              <li>✓ {recommendation.health}</li>
+              <li>✓ {recommendation.termPlan}</li>
+              <li>✓ {recommendation.healthPlan}</li>
             </ul>
           </div>
 
           <div className="mt-4 rounded-2xl border border-navy-900/10 bg-white p-4 text-sm text-navy-700/75">
             <p className="font-medium text-navy-900">Disclaimer</p>
             <p className="mt-1">
-              Premiums are indicative only and may vary based on age, health condition, occupation, and insurer underwriting.
+              Premiums are indicative only and may vary based on age, health, occupation, and insurer underwriting.
             </p>
           </div>
         </aside>
