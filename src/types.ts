@@ -13,6 +13,21 @@ export interface FundAllocation {
   percent: number
 }
 
+export type LeadRiskProfile = 'Conservative' | 'Moderate' | 'Aggressive'
+export type LeadGoal = 'Wealth Creation' | 'Retirement' | 'Child Education' | 'Tax Saving'
+
+export interface Lead {
+  id: string
+  createdAt: string
+  name: string
+  mobile: string
+  email: string
+  age: string
+  monthlySip: string
+  riskProfile: LeadRiskProfile
+  goal: LeadGoal
+}
+
 export interface Fund {
   name: string
   category: string

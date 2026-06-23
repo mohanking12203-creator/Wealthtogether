@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
-import type { ClientProfile, Fund } from './types'
+import React, { useEffect, useState } from 'react'
+import type { ClientProfile, Fund, Lead } from './types'
 import { INITIAL_FUNDS } from './data/funds'
+import { getStoredLeads, saveLeadsToStorage } from './utils/leadStorage'
 import { ClientProfiler, PortfolioEngine } from './components/ClientPortfolio'
 import { SipCalculator, StepUpSipCalculator } from './components/SipCalculators'
 import {
@@ -11,6 +12,8 @@ import {
 } from './components/PlanningModules'
 import { ClientReport } from './components/ClientReport'
 import { AdminPanel } from './components/AdminPanel'
+import { LeadCapture } from './components/LeadCapture'
+import { LeadAdmin } from './components/LeadAdmin'
 
 const TABS = [
   { id: 'profiler', label: 'Client Profiler' },
@@ -22,6 +25,8 @@ const TABS = [
   { id: 'insurance', label: 'Insurance Solutions' },
   { id: 'aum', label: 'AUM Tracker' },
   { id: 'report', label: 'Client Report' },
+  { id: 'book', label: 'Book Consultation' },
+  { id: 'leads', label: 'Admin Leads' },
   { id: 'admin', label: 'Admin Panel' },
 ] as const
 
@@ -37,6 +42,19 @@ export default function App() {
     durationYears: '',
   })
   const [funds, setFunds] = useState<Fund[]>(INITIAL_FUNDS)
+  const [leads, setLeads] = useState<Lead[]>([])
+
+  useEffect(() => {
+    setLeads(getStoredLeads())
+  }, [])
+
+  const saveLead = (lead: Lead) => {
+    setLeads((currentLeads) => {
+      const nextLeads = [lead, ...currentLeads]
+      saveLeadsToStorage(nextLeads)
+      return nextLeads
+    })
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[radial-gradient(circle_at_top,#f7f4ea_0%,#f7f5ef_40%,#f5f7fb_100%)]">
@@ -97,6 +115,8 @@ export default function App() {
         {tab === 'insurance' && <InsuranceCalculator />}
         {tab === 'aum' && <AumTracker />}
         {tab === 'report' && <ClientReport profile={profile} />}
+        {tab === 'book' && <LeadCapture onSaveLead={saveLead} />}
+        {tab === 'leads' && <LeadAdmin leads={leads} />}
         {tab === 'admin' && <AdminPanel funds={funds} setFunds={setFunds} />}
       </main>
 
